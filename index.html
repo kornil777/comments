@@ -64,8 +64,112 @@
   </body>
 
   <script>
-    "use strict";
-    // Код писать здесь
-    console.log("It works!");
+    
+    function formatDate(date) {
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear()).slice(-2);
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      
+      return `${day}.${month}.${year} ${hours}:${minutes}`;
+    }
+
+    
+    function createComment(name, text) {
+      const commentElement = document.createElement('li');
+      commentElement.classList.add('comment');
+      
+      const currentDate = formatDate(new Date());
+      
+      commentElement.innerHTML = `
+        <div class="comment-header">
+          <div>${name}</div>
+          <div>${currentDate}</div>
+        </div>
+        <div class="comment-body">
+          <div class="comment-text">${text}</div>
+        </div>
+        <div class="comment-footer">
+          <div class="likes">
+            <span class="likes-counter">0</span>
+            <button class="like-button"></button>
+          </div>
+        </div>
+      `;
+      
+      return commentElement;
+    }
+
+    
+    function initLikeButtons() {
+      const likeButtons = document.querySelectorAll('.like-button');
+      
+      likeButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const likesCounter = this.parentElement.querySelector('.likes-counter');
+          let likes = parseInt(likesCounter.textContent);
+          
+          if (this.classList.contains('-active-like')) {
+            likes--;
+            this.classList.remove('-active-like');
+          } else {
+            likes++;
+            this.classList.add('-active-like');
+          }
+          
+          likesCounter.textContent = likes;
+        });
+      });
+    }
+
+    
+    document.addEventListener('DOMContentLoaded', function() {
+      const addForm = document.querySelector('.add-form');
+      const nameInput = document.querySelector('.add-form-name');
+      const textInput = document.querySelector('.add-form-text');
+      const commentsList = document.querySelector('.comments');
+      const addButton = document.querySelector('.add-form-button');
+      
+      
+      initLikeButtons();
+      
+      
+      addButton.addEventListener('click', function() {
+        const name = nameInput.value.trim();
+        const text = textInput.value.trim();
+        
+       
+        if (!name) {
+          alert('Пожалуйста, введите ваше имя');
+          nameInput.focus();
+          return;
+        }
+        
+        if (!text) {
+          alert('Пожалуйста, введите текст комментария');
+          textInput.focus();
+          return;
+        }
+        
+        
+        const newComment = createComment(name, text);
+        commentsList.appendChild(newComment);
+        
+        
+        initLikeButtons();
+        
+        
+        nameInput.value = '';
+        textInput.value = '';
+      });
+      
+     
+      textInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+          addButton.click();
+        }
+      });
+    });
   </script>
 </html>
