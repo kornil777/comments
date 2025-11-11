@@ -16,15 +16,17 @@
           type="text"
           class="add-form-name"
           placeholder="Введите ваше имя"
+          id="nameInput"
         />
         <textarea
           type="textarea"
           class="add-form-text"
           placeholder="Введите ваш коментарий"
           rows="4"
+          id="textInput"
         ></textarea>
         <div class="add-form-row">
-          <button class="add-form-button">Написать</button>
+          <button class="add-form-button" id="addButton">Написать</button>
         </div>
       </div>
     </div>
@@ -52,6 +54,18 @@
     ];
 
     
+    let replyingTo = null;
+
+    
+    function escapeHtml(unsafe) {
+      return unsafe
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        
+        
+    }
+
+   
     function formatDate(date) {
       const day = String(date.getDate()).padStart(2, '0');
       const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -62,7 +76,7 @@
       return `${day}.${month}.${year} ${hours}:${minutes}`;
     }
 
-   
+    
     function renderComments() {
       const commentsList = document.getElementById('commentsList');
       commentsList.innerHTML = '';
@@ -72,15 +86,19 @@
         commentElement.classList.add('comment');
         
         
+        const safeName = escapeHtml(comment.name);
+        const safeText = escapeHtml(comment.text);
+        
+        
         const likeClass = comment.isLiked ? 'like-button -active-like' : 'like-button';
         
         commentElement.innerHTML = `
           <div class="comment-header">
-            <div>${comment.name}</div>
+            <div>${safeName}</div>
             <div>${comment.date}</div>
           </div>
           <div class="comment-body">
-            <div class="comment-text">${comment.text}</div>
+            <div class="comment-text">${safeText}</div>
           </div>
           <div class="comment-footer">
             <div class="likes">
@@ -94,19 +112,25 @@
       });
 
       
-      initLikeButtons();
+      initEventHandlers();
     }
 
-    function initLikeButtons() {
+   
+    function initEventHandlers() {
       const likeButtons = document.querySelectorAll('.like-button');
+      const commentElements = document.querySelectorAll('.comment');
+      
       
       likeButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(event) {
+         
+          event.stopPropagation();
+          
           const commentId = parseInt(this.getAttribute('data-id'));
           const comment = comments.find(c => c.id === commentId);
           
           if (comment) {
-            
+           
             if (comment.isLiked) {
               comment.likes--;
               comment.isLiked = false;
@@ -115,26 +139,54 @@
               comment.isLiked = true;
             }
             
-         
+            
             renderComments();
+          }
+        });
+      });
+      
+      
+      commentElements.forEach(comment => {
+        comment.addEventListener('click', function(event) {
+          
+          if (!event.target.closest('.like-button')) {
+            const commentId = parseInt(this.querySelector('.like-button').getAttribute('data-id'));
+            const commentToQuote = comments.find(c => c.id === commentId);
+            
+            if (commentToQuote) {
+             
+              document.getElementById('nameInput');
+              document.getElementById('textInput').value = `<${escapeHtml(commentToQuote.name)}, ${escapeHtml(commentToQuote.text)}>\n\n`;
+              document.getElementById('textInput').focus();
+              
+             
+              replyingTo = commentId;
+            }
           }
         });
       });
     }
 
-    
+   
     function addComment(name, text) {
+      
+      const safeName = escapeHtml(name);
+      const safeText = escapeHtml(text);
+      
       const newComment = {
         id: Date.now(), 
-        name: name,
+        name: safeName,
         date: formatDate(new Date()),
-        text: text,
+        text: safeText,
         likes: 0,
         isLiked: false
       };
       
       comments.push(newComment);
       renderComments();
+      
+     
+      replyingTo = null;
     }
 
     
@@ -142,11 +194,11 @@
       
       renderComments();
       
-      const nameInput = document.querySelector('.add-form-name');
-      const textInput = document.querySelector('.add-form-text');
-      const addButton = document.querySelector('.add-form-button');
+      const nameInput = document.getElementById('nameInput');
+      const textInput = document.getElementById('textInput');
+      const addButton = document.getElementById('addButton');
       
-     
+      
       addButton.addEventListener('click', function() {
         const name = nameInput.value.trim();
         const text = textInput.value.trim();
