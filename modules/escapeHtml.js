@@ -1,4 +1,3 @@
-// Функция для экранирования HTML
 export function escapeHtml(unsafe) {
   return unsafe
     .replace(/&/g, "&amp;")
