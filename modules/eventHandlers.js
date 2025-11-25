@@ -77,28 +77,6 @@ export function initEventHandlers() {
     comment.addEventListener("click", handleCommentClick);
   });
 
-  addButton.addEventListener("click", function () {
-    const name = nameInput.value.trim();
-    const text = textInput.value.trim();
-
-    if (!name) {
-      alert("Пожалуйста, введите ваше имя");
-      nameInput.focus();
-      return;
-    }
-
-    if (!text) {
-      alert("Пожалуйста, введите текст комментария");
-      textInput.focus();
-      return;
-    }
-
-    addComment(name, text);
-
-    nameInput.value = "";
-    textInput.value = "";
-  });
-
   textInput.addEventListener("keydown", function (event) {
     if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
       addButton.click();
