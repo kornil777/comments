@@ -4,6 +4,14 @@ import { addComment } from "./modules/eventHandlers.js";
 
 renderComments();
 
+// fetch("https://wedev-api.sky.pro/api/v1/:personal-key/comments")
+// .then((response) => {
+//   return response.json()
+// })
+// .then((data) => {
+//   console.log(data)
+// })
+
 initEventHandlers();
 addButton.addEventListener("click", function () {
   const name = nameInput.value.trim();
