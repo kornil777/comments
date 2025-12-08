@@ -45,15 +45,6 @@ export function addComment(name, text) {
   const safeName = escapeHtml(name);
   const safeText = escapeHtml(text);
 
-  const newComment = {
-    id: Date.now(),
-    name: safeName,
-    date: formatDate(new Date()),
-    text: safeText,
-    likes: 0,
-    isLiked: false,
-  };
-
   const updatedComments = [...comments, newComment];
   setComments(updatedComments);
   renderComments();

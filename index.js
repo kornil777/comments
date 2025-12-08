@@ -1,16 +1,14 @@
 import { renderComments } from "./modules/render.js";
-import { initEventHandlers } from "./modules/eventHandlers.js";
-import { addComment } from "./modules/eventHandlers.js";
+import { initEventHandlers, addComment } from "./modules/eventHandlers.js";
+import { setComments } from "./modules/constants.js";
+import { fetchComments, postComment } from "./api.js";
 
-renderComments();
-
-// fetch("https://wedev-api.sky.pro/api/v1/:personal-key/comments")
-// .then((response) => {
-//   return response.json()
-// })
-// .then((data) => {
-//   console.log(data)
-// })
+document.querySelector(".comments").innerHTML =
+  "Пожалуйста подождите, загружаю комментарии...";
+fetchComments().then((data) => {
+  setComments(data);
+  renderComments();
+});
 
 initEventHandlers();
 addButton.addEventListener("click", function () {
@@ -28,9 +26,33 @@ addButton.addEventListener("click", function () {
     textInput.focus();
     return;
   }
+  document.querySelector(".form-loading").style.display = "block";
+  document.querySelector(".add-form").style.display = "none";
 
-  addComment(name, text);
+  // addComment(name, text);
+  postComment(text, name)
+    .then((data) => {
+      document.querySelector(".form-loading").style.display = "none";
+      document.querySelector(".add-form").style.display = "flex";
+      setComments(data);
+      renderComments();
+      nameInput.value = "";
+      textInput.value = "";
+    })
+    .catch((error) => {
+      document.querySelector(".form-loading").style.display = "none";
+      document.querySelector(".add-form").style.display = "flex";
 
-  nameInput.value = "";
-  textInput.value = "";
+      if (error.message === "Failed to fetch") {
+        alert("Нет соединения, попробуйте позже");
+      }
+      if (error.message === "Ошибка сервера") {
+        alert("Ошибка сервера");
+      }
+      if (error.message === "Неверный запрос") {
+        alert("Имя и комментарий должны быть не менее 3-х символов");
+      }
+    });
+  // nameInput.value = "";
+  // textInput.value = "";
 });
