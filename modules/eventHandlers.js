@@ -90,9 +90,9 @@ export function addComment() {
       document.querySelector(".add-form").style.display = "flex";
 
       if (error.message === "Failed to fetch" || error.message.includes("NetworkError")) {
-        alert("Нет соединения, попробуйте позже");
+        alert("Кажется, у вас сломался интернет, попробуйте позже");
       } else if (error.message === "Ошибка сервера") {
-        alert("Ошибка сервера");
+        alert("Сервер сломался, попробуй позже");
       } else if (error.message === "Неверный запрос") {
         alert("Имя и комментарий должны быть не менее 3-х символов");
       } else {
