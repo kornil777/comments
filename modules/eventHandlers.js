@@ -102,7 +102,6 @@ export function addComment() {
 }
 
 
-
 export function initEventHandlers() {
   const likeButtons = document.querySelectorAll(".like-button");
   const commentElements = document.querySelectorAll(".comment");
