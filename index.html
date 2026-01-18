@@ -8,30 +8,71 @@
 
   <body>
     <div class="container">
-      <ul class="comments" id="commentsList"></ul>
-      <div class="add-form">
-        <input
-          type="text"
-          class="add-form-name"
-          placeholder="Введите ваше имя"
-          id="nameInput"
-        />
+      <!-- Заголовок -->
+      <h1 style="color: white; margin-bottom: 40px;">Комментарии</h1>
 
+      <!-- Информация о пользователе -->
+      <div id="userInfo" style="display: none; margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px; color: white;">
+        <span style="margin-right: 15px;">Вы вошли как: <span id="userName"></span></span>
+        <button id="logoutButton" style="padding: 5px 15px; background: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer;">
+          Выйти
+        </button>
+      </div>
+
+      <ul class="comments" id="commentsList"></ul>
+      
+      <!-- Приглашение авторизоваться -->
+      <div class="auth-prompt" style="display: none; margin-top: 48px; padding: 30px; background: rgba(255,255,255,0.1); border-radius: 20px; text-align: center;">
+        <p style="color: white; font-size: 18px; margin: 0;">
+          Если хочешь оставить комментарий, 
+          <a href="#" id="authPromptLogin" style="color: #bcec30; text-decoration: none; font-weight: bold;">войди</a> 
+          или 
+          <a href="#" id="authPromptRegister" style="color: #bcec30; text-decoration: none; font-weight: bold;">зарегистрируйся</a>.
+        </p>
+      </div>
+      
+      <!-- Форма добавления комментария -->
+      <div class="add-form" style="display: none; margin-top: 48px;">
         <textarea
           type="textarea"
           class="add-form-text"
-          placeholder="Введите ваш коментарий"
+          placeholder="Введите ваш комментарий"
           rows="4"
           id="textInput"
         ></textarea>
         <div class="add-form-row">
           <button class="add-form-button" id="addButton">Написать</button>
         </div>
-        
       </div>
-      <div class="form-loading" style="display: none; margin-top: 20px;"> Комментарий добавляется...
- 
+
+      <!-- Форма входа -->
+      <div id="loginForm" class="add-form" style="display: none; margin-top: 48px;">
+        <h3 style="color: white; margin-top: 0; margin-bottom: 20px;">Вход</h3>
+        <input type="text" id="loginLogin" placeholder="Логин" class="add-form-name" />
+        <input type="password" id="loginPassword" placeholder="Пароль" class="add-form-name" style="margin-top: 10px;" />
+        <div id="loginError" style="color: #ff4444; margin-top: 10px; min-height: 20px;"></div>
+        <div class="add-form-row" style="margin-top: 15px;">
+          <button id="loginButton" class="add-form-button" style="margin-right: 10px;">Войти</button>
+          <a href="#" id="showRegister" style="color: #bcec30; text-decoration: none; line-height: 40px; margin-left: 10px;">Регистрация</a>
         </div>
+      </div>
+
+      <!-- Форма регистрации -->
+      <div id="registerForm" class="add-form" style="display: none; margin-top: 48px;">
+        <h3 style="color: white; margin-top: 0; margin-bottom: 20px;">Регистрация</h3>
+        <input type="text" id="registerName" placeholder="Имя" class="add-form-name" />
+        <input type="text" id="registerLogin" placeholder="Логин" class="add-form-name" style="margin-top: 10px;" />
+        <input type="password" id="registerPassword" placeholder="Пароль" class="add-form-name" style="margin-top: 10px;" />
+        <div id="registerError" style="color: #ff4444; margin-top: 10px; min-height: 20px;"></div>
+        <div class="add-form-row" style="margin-top: 15px;">
+          <button id="registerButton" class="add-form-button" style="margin-right: 10px;">Зарегистрироваться</button>
+          <a href="#" id="showLogin" style="color: #bcec30; text-decoration: none; line-height: 40px; margin-left: 10px;">Войти</a>
+        </div>
+      </div>
+      
+      <div class="form-loading" style="display: none; margin-top: 20px; color: white;">
+        Комментарий добавляется...
+      </div>
     </div>
 
     <script type="module" src="index.js"></script>

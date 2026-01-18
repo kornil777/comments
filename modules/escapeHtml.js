@@ -1,7 +1,10 @@
-
 export function escapeHtml(unsafe) {
+  if (!unsafe) return '';
+  
   return unsafe
-  .replace("<", "&lt;")
-  .replace(">", "&gt;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
-
