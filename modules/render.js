@@ -29,7 +29,7 @@ export function renderComments() {
       : "like-button";
 
     const likeTitle = isLoggedIn 
-      ? "Поставить лайк" 
+      ? (comment.isLiked ? "Убрать лайк" : "Поставить лайк")
       : "Для оценки комментария требуется авторизация";
 
     commentElement.innerHTML = `

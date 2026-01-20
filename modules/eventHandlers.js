@@ -1,332 +1,466 @@
 import { comments, setComments } from "./constants.js";
 import { renderComments } from "./render.js";
 import { escapeHtml } from "./escapeHtml.js";
-import { postComment, toggleLike } from "../api.js";
+import { postComment, toggleLike, fetchComments } from "../api.js";
 import { getToken, login, register, removeToken, getCurrentUser } from "./auth.js";
+
+// Функция для создания формы логина через JS
+export function createLoginForm() {
+  const authContainer = document.getElementById('authContainer');
+  
+  if (!authContainer) return;
+  
+  authContainer.innerHTML = `
+    <div class="add-form" id="loginForm" style="margin-bottom: 30px; margin-top: 20px;">
+      <h3 style="color: white; margin-top: 0; margin-bottom: 20px;">Вход</h3>
+      <input type="text" id="loginLogin" placeholder="Логин" class="add-form-name" />
+      <input type="password" id="loginPassword" placeholder="Пароль" class="add-form-name" style="margin-top: 10px;" />
+      <div id="loginError" style="color: #ff4444; margin-top: 10px; min-height: 20px;"></div>
+      <div class="add-form-row" style="margin-top: 15px;">
+        <button id="loginButton" class="add-form-button" style="margin-right: 10px;">Войти</button>
+        <a href="#" id="showRegister" style="color: #bcec30; text-decoration: none; line-height: 40px; margin-left: 10px;">Регистрация</a>
+      </div>
+    </div>
+  `;
+  
+  // Показываем контейнер
+  authContainer.style.display = 'block';
+}
+
+// Функция для создания формы регистрации через JS
+export function createRegisterForm() {
+  const authContainer = document.getElementById('authContainer');
+  
+  if (!authContainer) return;
+  
+  authContainer.innerHTML = `
+    <div class="add-form" id="registerForm" style="margin-bottom: 30px; margin-top: 20px;">
+      <h3 style="color: white; margin-top: 0; margin-bottom: 20px;">Регистрация</h3>
+      <input type="text" id="registerName" placeholder="Имя" class="add-form-name" />
+      <input type="text" id="registerLogin" placeholder="Логин" class="add-form-name" style="margin-top: 10px;" />
+      <input type="password" id="registerPassword" placeholder="Пароль" class="add-form-name" style="margin-top: 10px;" />
+      <div id="registerError" style="color: #ff4444; margin-top: 10px; min-height: 20px;"></div>
+      <div class="add-form-row" style="margin-top: 15px;">
+        <button id="registerButton" class="add-form-button" style="margin-right: 10px;">Зарегистрироваться</button>
+        <a href="#" id="showLogin" style="color: #bcec30; text-decoration: none; line-height: 40px; margin-left: 10px;">Войти</a>
+      </div>
+    </div>
+  `;
+  
+  // Показываем контейнер
+  authContainer.style.display = 'block';
+}
+
+// Показать форму логина
+export function showLoginForm() {
+  createLoginForm();
+  initAuthHandlers();
+}
+
+// Показать форму регистрации
+export function showRegisterForm() {
+  createRegisterForm();
+  initAuthHandlers();
+}
+
+// Показать информацию о пользователе
+export function showUserInfo() {
+  const user = getCurrentUser();
+  if (user) {
+    // Проверяем, существует ли элемент userName
+    const userNameElement = document.getElementById('userName');
+    const userInfoElement = document.getElementById('userInfo');
+    const authorNameElement = document.getElementById('authorName');
+    
+    if (userNameElement) {
+      userNameElement.textContent = user.name;
+    }
+    
+    if (userInfoElement) {
+      userInfoElement.style.display = 'block';
+    }
+    
+    if (authorNameElement) {
+      authorNameElement.value = user.name;
+    }
+    
+    // Очищаем контейнер авторизации
+    const authContainer = document.getElementById('authContainer');
+    if (authContainer) {
+      authContainer.innerHTML = '';
+      authContainer.style.display = 'none';
+    }
+  }
+}
 
 // Функция для обработки лайков
 async function handleLikeClick(event) {
-    event.stopPropagation();
+  event.stopPropagation();
+  
+  const commentId = event.target.getAttribute("data-id");
+  
+  if (!getToken()) {
+    showLoginForm();
+    alert("Для оценки комментария требуется авторизация");
+    return;
+  }
+  
+  try {
+    // Показываем индикатор загрузки на кнопке
+    const button = event.target;
+    button.style.opacity = '0.7';
+    button.style.pointerEvents = 'none';
     
-    const commentId = event.target.getAttribute("data-id");
+    // Отправляем запрос на сервер для переключения лайка
+    const result = await toggleLike(commentId);
     
-    if (!getToken()) {
-        showLoginForm();
-        alert("Для оценки комментария требуется авторизация");
-        return;
+    // Обновляем локальный массив комментариев
+    const commentIndex = comments.findIndex((c) => c.id === commentId);
+    if (commentIndex !== -1) {
+      const updatedComments = [...comments];
+      updatedComments[commentIndex].likes = result.likes;
+      updatedComments[commentIndex].isLiked = result.isLiked;
+      setComments(updatedComments);
+      renderComments();
+      initEventHandlers();
     }
+  } catch (error) {
+    console.error("Ошибка при установке лайка:", error);
     
-    try {
-        // Показываем индикатор загрузки на кнопке
-        const button = event.target;
-        const originalTitle = button.getAttribute('title');
-        button.setAttribute('title', 'Загрузка...');
-        button.style.opacity = '0.7';
-        button.style.pointerEvents = 'none';
-        
-        // Отправляем запрос на сервер для переключения лайка
-        const result = await toggleLike(commentId);
-        
-        // Обновляем локальный массив комментариев
-        const commentIndex = comments.findIndex((c) => c.id === commentId);
-        if (commentIndex !== -1) {
-            const updatedComments = [...comments];
-            updatedComments[commentIndex].likes = result.likes;
-            updatedComments[commentIndex].isLiked = result.isLiked;
-            setComments(updatedComments);
-            renderComments();
-            initEventHandlers();
-        }
-    } catch (error) {
-        console.error("Ошибка при установке лайка:", error);
-        
-        if (error.message === "Требуется авторизация") {
-            showLoginForm();
-            alert("Для оценки комментария требуется авторизация");
-        } else if (error.message.includes("Ошибка сервера")) {
-            alert("Сервер сломался, попробуйте позже");
-        } else {
-            alert("Произошла ошибка при установке лайка");
-        }
+    if (error.message === "Требуется авторизация") {
+      showLoginForm();
+      alert("Для оценки комментария требуется авторизация");
+    } else if (error.message.includes("Ошибка сервера")) {
+      alert("Сервер сломался, попробуйте позже");
+    } else {
+      alert("Произошла ошибка при установке лайка");
     }
+  }
 }
 
 // Функция для обработки цитирования
 function handleCommentClick(event) {
-    if (!event.target.closest(".like-button")) {
-        const commentId = event.currentTarget.querySelector(".like-button").getAttribute("data-id");
-        const commentToQuote = comments.find((c) => c.id === commentId);
-        
-        if (commentToQuote) {
-            // При цитировании не заполняем имя, только текст
-            document.getElementById("textInput").value = `> ${escapeHtml(commentToQuote.text)}\n\n`;
-            document.getElementById("textInput").focus();
-            
-            // Если не авторизован, показываем форму входа
-            if (!getToken()) {
-                showLoginForm();
-            }
-        }
+  if (!event.target.closest(".like-button")) {
+    const commentId = event.currentTarget.querySelector(".like-button").getAttribute("data-id");
+    const commentToQuote = comments.find((c) => c.id === commentId);
+    
+    if (commentToQuote) {
+      document.getElementById("textInput").value = `> ${escapeHtml(commentToQuote.text)}\n\n`;
+      document.getElementById("textInput").focus();
+      
+      // Если не авторизован, показываем форму входа
+      if (!getToken()) {
+        showLoginForm();
+      }
     }
+  }
 }
 
 // Функция для добавления комментария
 export function addComment() {
-    const textInput = document.getElementById("textInput");
-    const text = textInput.value.trim();
+  const textInput = document.getElementById("textInput");
+  const text = textInput.value.trim();
 
-    if (!getToken()) {
+  if (!getToken()) {
+    showLoginForm();
+    alert("Для добавления комментария требуется авторизация");
+    return;
+  }
+
+  if (!text) {
+    alert("Пожалуйста, введите текст комментария");
+    textInput.focus();
+    return;
+  }
+
+  if (text.length < 3) {
+    alert("Комментарий должен содержать хотя бы 3 символа");
+    textInput.focus();
+    return;
+  }
+
+  document.querySelector(".form-loading").style.display = "block";
+  document.getElementById("addButton").disabled = true;
+
+  postComment({ text })
+    .then((data) => {
+      document.querySelector(".form-loading").style.display = "none";
+      document.getElementById("addButton").disabled = false;
+      
+      setComments(data);
+      renderComments();
+      initEventHandlers();
+      
+      textInput.value = "";
+    })
+    .catch((error) => {
+      document.querySelector(".form-loading").style.display = "none";
+      document.getElementById("addButton").disabled = false;
+
+      if (error.message === "Требуется авторизация") {
         showLoginForm();
         alert("Для добавления комментария требуется авторизация");
-        return;
-    }
-
-    if (!text) {
-        alert("Пожалуйста, введите текст комментария");
-        textInput.focus();
-        return;
-    }
-
-    document.querySelector(".form-loading").style.display = "block";
-    document.getElementById("addButton").disabled = true;
-
-    postComment({ text })
-        .then((data) => {
-            document.querySelector(".form-loading").style.display = "none";
-            document.getElementById("addButton").disabled = false;
-            
-            setComments(data);
-            renderComments();
-            initEventHandlers();
-            
-            textInput.value = "";
-        })
-        .catch((error) => {
-            document.querySelector(".form-loading").style.display = "none";
-            document.getElementById("addButton").disabled = false;
-
-            if (error.message === "Требуется авторизация") {
-                showLoginForm();
-                alert("Для добавления комментария требуется авторизация");
-            } else if (error.message.includes("содержать хотя бы 3 символа")) {
-                alert("Комментарий должен содержать хотя бы 3 символа");
-            } else {
-                alert(error.message || "Произошла ошибка");
-            }
-        });
-}
-
-// Функции для управления формами
-function showLoginForm() {
-    hideCommentForm();
-    hideAuthPrompt();
-    hideRegisterForm();
-    document.getElementById("loginForm").style.display = "flex";
-}
-
-function showRegisterForm() {
-    hideCommentForm();
-    hideAuthPrompt();
-    hideLoginForm();
-    document.getElementById("registerForm").style.display = "flex";
-}
-
-function hideLoginForm() {
-    document.getElementById("loginForm").style.display = "none";
-}
-
-function hideRegisterForm() {
-    document.getElementById("registerForm").style.display = "none";
-}
-
-function hideAuthForms() {
-    hideLoginForm();
-    hideRegisterForm();
-}
-
-function showCommentForm() {
-    hideAuthPrompt();
-    hideAuthForms();
-    document.querySelector(".add-form").style.display = "flex";
-}
-
-function hideCommentForm() {
-    document.querySelector(".add-form").style.display = "none";
-}
-
-function showAuthPrompt() {
-    document.querySelector(".auth-prompt").style.display = "block";
-}
-
-function hideAuthPrompt() {
-    document.querySelector(".auth-prompt").style.display = "none";
-}
-
-function showUserInfo() {
-    const user = getCurrentUser();
-    if (user) {
-        document.getElementById("userName").textContent = user.name;
-        document.getElementById("userInfo").style.display = "block";
-        hideAuthForms();
-        hideAuthPrompt();
-        showCommentForm();
-    } else {
-        document.getElementById("userInfo").style.display = "none";
-        hideCommentForm();
-        hideAuthForms();
-        showAuthPrompt();
-    }
+      } else if (error.message.includes("содержать хотя бы 3 символа")) {
+        alert("Комментарий должен содержать хотя бы 3 символа");
+      } else {
+        alert(error.message || "Произошла ошибка при добавлении комментария");
+      }
+    });
 }
 
 // Инициализация обработчиков авторизации
-export function initAuthHandlers() {
-    const loginButton = document.getElementById("loginButton");
-    const registerButton = document.getElementById("registerButton");
-    const logoutButton = document.getElementById("logoutButton");
-    const showRegisterLink = document.getElementById("showRegister");
-    const showLoginLink = document.getElementById("showLogin");
-    const authPromptLoginLink = document.getElementById("authPromptLogin");
-    const authPromptRegisterLink = document.getElementById("authPromptRegister");
-    
-    // Показываем/скрываем формы в зависимости от авторизации
-    showUserInfo();
-    
-    // Обработчики для переключения между формами входа и регистрации
-    if (showRegisterLink) {
-        showRegisterLink.addEventListener("click", (e) => {
-            e.preventDefault();
-            showRegisterForm();
-        });
-    }
-    
-    if (showLoginLink) {
-        showLoginLink.addEventListener("click", (e) => {
-            e.preventDefault();
-            showLoginForm();
-        });
-    }
-    
-    // Обработчики для ссылок в приглашении авторизоваться
-    if (authPromptLoginLink) {
-        authPromptLoginLink.addEventListener("click", (e) => {
-            e.preventDefault();
-            showLoginForm();
-        });
-    }
-    
-    if (authPromptRegisterLink) {
-        authPromptRegisterLink.addEventListener("click", (e) => {
-            e.preventDefault();
-            showRegisterForm();
-        });
-    }
-    
-    // Вход
-    if (loginButton) {
-        loginButton.addEventListener("click", () => {
-            const loginInput = document.getElementById("loginLogin");
-            const passwordInput = document.getElementById("loginPassword");
-            
-            const loginValue = loginInput.value.trim();
-            const passwordValue = passwordInput.value.trim();
-            
-            if (!loginValue || !passwordValue) {
-                document.getElementById("loginError").textContent = "Заполните все поля";
-                return;
-            }
-            
-            login({ login: loginValue, password: passwordValue })
-                .then(() => {
-                    document.getElementById("loginError").textContent = "";
-                    loginInput.value = "";
-                    passwordInput.value = "";
-                    showUserInfo();
-                    alert("Вы успешно вошли!");
-                })
-                .catch((error) => {
-                    document.getElementById("loginError").textContent = error.message;
-                });
-        });
-    }
-    
-    // Регистрация
-    if (registerButton) {
-        registerButton.addEventListener("click", () => {
-            const nameInput = document.getElementById("registerName");
-            const loginInput = document.getElementById("registerLogin");
-            const passwordInput = document.getElementById("registerPassword");
-            
-            const nameValue = nameInput.value.trim();
-            const loginValue = loginInput.value.trim();
-            const passwordValue = passwordInput.value.trim();
-            
-            if (!nameValue || !loginValue || !passwordValue) {
-                document.getElementById("registerError").textContent = "Заполните все поля";
-                return;
-            }
-            
-            register({ name: nameValue, login: loginValue, password: passwordValue })
-                .then(() => {
-                    document.getElementById("registerError").textContent = "";
-                    nameInput.value = "";
-                    loginInput.value = "";
-                    passwordInput.value = "";
-                    showUserInfo();
-                    alert("Регистрация успешна!");
-                })
-                .catch((error) => {
-                    document.getElementById("registerError").textContent = error.message;
-                });
-        });
-    }
-    
-    // Выход
-    if (logoutButton) {
-        logoutButton.addEventListener("click", () => {
-            removeToken();
-            showUserInfo();
-            alert("Вы вышли из системы");
-            
-            // Перезагружаем комментарии
-            import("../api.js").then(({ fetchComments }) => {
-                fetchComments().then((data) => {
-                    setComments(data);
-                    renderComments();
-                    initEventHandlers();
-                });
+function initAuthHandlers() {
+  const loginButton = document.getElementById("loginButton");
+  const registerButton = document.getElementById("registerButton");
+  const logoutButton = document.getElementById("logoutButton");
+  const showRegisterLink = document.getElementById("showRegister");
+  const showLoginLink = document.getElementById("showLogin");
+  
+  // Обработчики для переключения между формами входа и регистрации
+  if (showRegisterLink) {
+    showRegisterLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      showRegisterForm();
+    });
+  }
+  
+  if (showLoginLink) {
+    showLoginLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      showLoginForm();
+    });
+  }
+  
+  // Вход
+  if (loginButton) {
+    loginButton.addEventListener("click", () => {
+      const loginInput = document.getElementById("loginLogin");
+      const passwordInput = document.getElementById("loginPassword");
+      
+      if (!loginInput || !passwordInput) return;
+      
+      const loginValue = loginInput.value.trim();
+      const passwordValue = passwordInput.value.trim();
+      
+      if (!loginValue || !passwordValue) {
+        const loginError = document.getElementById("loginError");
+        if (loginError) {
+          loginError.textContent = "Заполните все поля";
+        }
+        return;
+      }
+      
+      login({ login: loginValue, password: passwordValue })
+        .then(() => {
+          const loginError = document.getElementById("loginError");
+          if (loginError) {
+            loginError.textContent = "";
+          }
+          
+          if (loginInput) loginInput.value = "";
+          if (passwordInput) passwordInput.value = "";
+          
+          // Показываем информацию о пользователе
+          showUserInfo();
+          
+          // Загружаем комментарии заново
+          const commentsList = document.querySelector(".comments");
+          if (commentsList) {
+            commentsList.innerHTML = "Пожалуйста подождите, загружаю комментарии...";
+          }
+          
+          fetchComments()
+            .then((data) => {
+              setComments(data);
+              renderComments();
+              initEventHandlers();
+              
+              // Показываем форму комментариев
+              const addForm = document.querySelector('.add-form');
+              if (addForm) {
+                addForm.style.display = 'flex';
+              }
+              
+              // Заполняем поле автора
+              const user = getCurrentUser();
+              const authorName = document.getElementById('authorName');
+              if (authorName && user) {
+                authorName.value = user.name;
+              }
+              
+            //   alert("Вы успешно вошли!");
+            })
+            .catch((error) => {
+              console.error("Ошибка загрузки комментариев:", error);
+              const commentsList = document.querySelector(".comments");
+              if (commentsList) {
+                commentsList.innerHTML = 
+                  "<li style='color: white; text-align: center; padding: 20px;'>Ошибка загрузки комментариев.</li>";
+              }
             });
+        })
+        .catch((error) => {
+          const loginError = document.getElementById("loginError");
+          if (loginError) {
+            loginError.textContent = error.message;
+          }
         });
-    }
+    });
+  }
+  
+  // Регистрация
+  if (registerButton) {
+    registerButton.addEventListener("click", () => {
+      const nameInput = document.getElementById("registerName");
+      const loginInput = document.getElementById("registerLogin");
+      const passwordInput = document.getElementById("registerPassword");
+      
+      if (!nameInput || !loginInput || !passwordInput) return;
+      
+      const nameValue = nameInput.value.trim();
+      const loginValue = loginInput.value.trim();
+      const passwordValue = passwordInput.value.trim();
+      
+      if (!nameValue || !loginValue || !passwordValue) {
+        const registerError = document.getElementById("registerError");
+        if (registerError) {
+          registerError.textContent = "Заполните все поля";
+        }
+        return;
+      }
+      
+      register({ name: nameValue, login: loginValue, password: passwordValue })
+        .then(() => {
+          const registerError = document.getElementById("registerError");
+          if (registerError) {
+            registerError.textContent = "";
+          }
+          
+          if (nameInput) nameInput.value = "";
+          if (loginInput) loginInput.value = "";
+          if (passwordInput) passwordInput.value = "";
+          
+          // Показываем информацию о пользователе
+          showUserInfo();
+          
+          // Загружаем комментарии заново
+          const commentsList = document.querySelector(".comments");
+          if (commentsList) {
+            commentsList.innerHTML = "Пожалуйста подождите, загружаю комментарии...";
+          }
+          
+          fetchComments()
+            .then((data) => {
+              setComments(data);
+              renderComments();
+              initEventHandlers();
+              
+              // Показываем форму комментариев
+              const addForm = document.querySelector('.add-form');
+              if (addForm) {
+                addForm.style.display = 'flex';
+              }
+              
+              // Заполняем поле автора
+              const user = getCurrentUser();
+              const authorName = document.getElementById('authorName');
+              if (authorName && user) {
+                authorName.value = user.name;
+              }
+              
+              alert("Регистрация успешна!");
+            })
+            .catch((error) => {
+              console.error("Ошибка загрузки комментариев:", error);
+              const commentsList = document.querySelector(".comments");
+              if (commentsList) {
+                commentsList.innerHTML = 
+                  "<li style='color: white; text-align: center; padding: 20px;'>Ошибка загрузки комментариев.</li>";
+              }
+            });
+        })
+        .catch((error) => {
+          const registerError = document.getElementById("registerError");
+          if (registerError) {
+            registerError.textContent = error.message;
+          }
+        });
+    });
+  }
+  
+  // Выход
+  if (logoutButton) {
+    logoutButton.addEventListener("click", () => {
+      removeToken();
+      
+      // Скрываем информацию о пользователе
+      const userInfo = document.getElementById('userInfo');
+      if (userInfo) {
+        userInfo.style.display = 'none';
+      }
+      
+      // Скрываем форму комментариев
+      const addForm = document.querySelector('.add-form');
+      if (addForm) {
+        addForm.style.display = 'none';
+      }
+      
+      // Очищаем поле автора
+      const authorName = document.getElementById('authorName');
+      if (authorName) {
+        authorName.value = '';
+      }
+      
+      // Показываем форму логина
+      showLoginForm();
+      
+      // Обновляем комментарии для отображения правильного состояния лайков
+      fetchComments()
+        .then((data) => {
+          setComments(data);
+          renderComments();
+          initEventHandlers();
+        })
+        .catch((error) => {
+          console.error("Ошибка загрузки комментариев:", error);
+        });
+        
+    //   alert("Вы вышли из системы");
+    });
+  }
 }
 
 // Функция для инициализации обработчиков событий
 export function initEventHandlers() {
-    const likeButtons = document.querySelectorAll(".like-button");
-    const commentElements = document.querySelectorAll(".comment");
-    const addButton = document.getElementById("addButton");
+  const likeButtons = document.querySelectorAll(".like-button");
+  const commentElements = document.querySelectorAll(".comment");
+  const addButton = document.getElementById("addButton");
 
-    likeButtons.forEach((button) => {
-        button.replaceWith(button.cloneNode(true));
+  likeButtons.forEach((button) => {
+    button.replaceWith(button.cloneNode(true));
+  });
+
+  document.querySelectorAll(".like-button").forEach((button) => {
+    button.addEventListener("click", handleLikeClick);
+  });
+
+  commentElements.forEach((comment) => {
+    comment.addEventListener("click", handleCommentClick);
+  });
+
+  if (addButton) {
+    addButton.addEventListener("click", addComment);
+  }
+
+  const textInput = document.getElementById("textInput");
+  if (textInput) {
+    textInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+        addComment();
+      }
     });
-
-    document.querySelectorAll(".like-button").forEach((button) => {
-        button.addEventListener("click", handleLikeClick);
-    });
-
-    commentElements.forEach((comment) => {
-        comment.addEventListener("click", handleCommentClick);
-    });
-
-    if (addButton) {
-        addButton.addEventListener("click", addComment);
-    }
-
-    const textInput = document.getElementById("textInput");
-    if (textInput) {
-        textInput.addEventListener("keydown", (event) => {
-            if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
-                addComment();
-            }
-        });
-    }
+  }
+  
+  // Инициализация обработчиков авторизации
+  initAuthHandlers();
 }

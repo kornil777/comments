@@ -138,3 +138,9 @@ body {
   .-error {
     border: 1px solid red;
   }
+  
+#authContainer {
+  width: 100%;
+  max-width: 596px;
+  margin-bottom: 30px;
+}

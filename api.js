@@ -74,28 +74,30 @@ export const postComment = ({ text }) => {
 };
 
 export const toggleLike = (commentId) => {
-    const token = getToken();
-    if (!token) {
-        return Promise.reject(new Error("Требуется авторизация"));
-    }
+  const token = getToken();
+  if (!token) {
+    return Promise.reject(new Error("Требуется авторизация"));
+  }
 
-    return fetch(`${host}/comments/${commentId}/toggle-like`, {
-        method: "POST",
-        headers: getHeaders(),
+  return fetch(`${host}/comments/${commentId}/toggle-like`, {
+    method: "POST",
+    headers: {
+      'Authorization': `Bearer ${token}`
+    },
+  })
+    .then((response) => {
+      if (response.status === 401) {
+        throw new Error("Требуется авторизация");
+      }
+      if (response.status === 500) {
+        throw new Error("Ошибка сервера");
+      }
+      if (!response.ok) {
+        throw new Error(`Ошибка: ${response.status}`);
+      }
+      return response.json();
     })
-        .then((response) => {
-            if (response.status === 401) {
-                throw new Error("Требуется авторизация");
-            }
-            if (response.status === 500) {
-                throw new Error("Ошибка сервера");
-            }
-            if (!response.ok) {
-                throw new Error(`Ошибка: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then((data) => {
-            return data.result;
-        });
+    .then((data) => {
+      return data.result;
+    });
 };
