@@ -4,6 +4,27 @@
     <title>Проект "Комменты"</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      .auth-suggestion {
+        display: none;
+        background: rgba(255,255,255,0.1);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 30px 0;
+        text-align: center;
+        color: white;
+        font-size: 18px;
+      }
+      .auth-suggestion a {
+        color: #bcec30;
+        text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .auth-suggestion a:hover {
+        text-decoration: underline;
+      }
+    </style>
   </head>
 
   <body>
@@ -20,6 +41,14 @@
 
       <!-- Контейнер для форм авторизации/регистрации -->
       <div id="authContainer"></div>
+
+      <!-- Предложение авторизации -->
+      <div class="auth-suggestion" id="authSuggestion">
+        <p style="margin: 0;">
+          Если хочешь оставить свой комментарий - 
+          <a id="authSuggestionLink">авторизуйся</a>
+        </p>
+      </div>
 
       <!-- Комментарии -->
       <ul class="comments" id="commentsList"></ul>

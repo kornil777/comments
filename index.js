@@ -29,6 +29,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (authorName) {
           authorName.value = user.name;
         }
+        
+        // Показываем информацию о пользователе
+        showUserInfo();
+        
+        // Скрываем предложение авторизации
+        const authSuggestion = document.getElementById('authSuggestion');
+        if (authSuggestion) {
+          authSuggestion.style.display = 'none';
+        }
+      } else {
+        // Если не авторизован, показываем предложение авторизоваться
+        const authSuggestion = document.getElementById('authSuggestion');
+        if (authSuggestion) {
+          authSuggestion.style.display = 'block';
+        }
+        
+        // Скрываем форму комментариев
+        const addForm = document.querySelector('.add-form');
+        if (addForm) {
+          addForm.style.display = 'none';
+        }
       }
       
       initEventHandlers();
@@ -38,13 +59,4 @@ document.addEventListener('DOMContentLoaded', () => {
       document.querySelector(".comments").innerHTML = 
         "<li style='color: white; text-align: center; padding: 20px;'>Ошибка загрузки комментариев. Пожалуйста, попробуйте позже.</li>";
     });
-    
-  // Проверяем авторизацию и показываем соответствующий интерфейс
-  if (!token) {
-    // Если нет токена, показываем форму логина
-    showLoginForm();
-  } else {
-    // Если токен есть, показываем информацию о пользователе
-    showUserInfo();
-  }
 });

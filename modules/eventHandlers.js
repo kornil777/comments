@@ -4,8 +4,22 @@ import { escapeHtml } from "./escapeHtml.js";
 import { postComment, toggleLike, fetchComments } from "../api.js";
 import { getToken, login, register, removeToken, getCurrentUser } from "./auth.js";
 
+// Показать/скрыть предложение авторизации
+export function showAuthSuggestion(show) {
+  const authSuggestion = document.getElementById('authSuggestion');
+  if (authSuggestion) {
+    authSuggestion.style.display = show ? 'block' : 'none';
+  }
+  
+  // Также управляем видимостью комментариев
+  const commentsList = document.getElementById('commentsList');
+  if (commentsList) {
+    commentsList.style.display = show ? 'none' : 'block';
+  }
+}
+
 // Функция для создания формы логина через JS
-export function createLoginForm() {
+function createLoginForm() {
   const authContainer = document.getElementById('authContainer');
   
   if (!authContainer) return;
@@ -28,7 +42,7 @@ export function createLoginForm() {
 }
 
 // Функция для создания формы регистрации через JS
-export function createRegisterForm() {
+function createRegisterForm() {
   const authContainer = document.getElementById('authContainer');
   
   if (!authContainer) return;
@@ -51,14 +65,30 @@ export function createRegisterForm() {
   authContainer.style.display = 'block';
 }
 
-// Показать форму логина
+// Показать форму логина (скрывает комментарии и показывает форму)
 export function showLoginForm() {
+  // Скрываем предложение авторизации
+  showAuthSuggestion(false);
+  // Скрываем комментарии
+  const commentsList = document.getElementById('commentsList');
+  if (commentsList) {
+    commentsList.style.display = 'none';
+  }
+  // Создаем форму логина
   createLoginForm();
   initAuthHandlers();
 }
 
-// Показать форму регистрации
-export function showRegisterForm() {
+// Показать форму регистрации (скрывает комментарии и показывает форму)
+function showRegisterForm() {
+  // Скрываем предложение авторизации
+  showAuthSuggestion(false);
+  // Скрываем комментарии
+  const commentsList = document.getElementById('commentsList');
+  if (commentsList) {
+    commentsList.style.display = 'none';
+  }
+  // Создаем форму регистрации
   createRegisterForm();
   initAuthHandlers();
 }
@@ -215,6 +245,15 @@ function initAuthHandlers() {
   const logoutButton = document.getElementById("logoutButton");
   const showRegisterLink = document.getElementById("showRegister");
   const showLoginLink = document.getElementById("showLogin");
+  const authSuggestionLink = document.getElementById("authSuggestionLink");
+  
+  // Обработчик для ссылки в предложении авторизации
+  if (authSuggestionLink) {
+    authSuggestionLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      showLoginForm();
+    });
+  }
   
   // Обработчики для переключения между формами входа и регистрации
   if (showRegisterLink) {
@@ -263,10 +302,18 @@ function initAuthHandlers() {
           // Показываем информацию о пользователе
           showUserInfo();
           
+          // Скрываем форму авторизации
+          const authContainer = document.getElementById('authContainer');
+          if (authContainer) {
+            authContainer.innerHTML = '';
+            authContainer.style.display = 'none';
+          }
+          
           // Загружаем комментарии заново
           const commentsList = document.querySelector(".comments");
           if (commentsList) {
             commentsList.innerHTML = "Пожалуйста подождите, загружаю комментарии...";
+            commentsList.style.display = 'block';
           }
           
           fetchComments()
@@ -288,7 +335,10 @@ function initAuthHandlers() {
                 authorName.value = user.name;
               }
               
-            //   alert("Вы успешно вошли!");
+              // Скрываем предложение авторизации
+              showAuthSuggestion(false);
+              
+              // alert("Вы успешно вошли!");
             })
             .catch((error) => {
               console.error("Ошибка загрузки комментариев:", error);
@@ -343,10 +393,18 @@ function initAuthHandlers() {
           // Показываем информацию о пользователе
           showUserInfo();
           
+          // Скрываем форму авторизации
+          const authContainer = document.getElementById('authContainer');
+          if (authContainer) {
+            authContainer.innerHTML = '';
+            authContainer.style.display = 'none';
+          }
+          
           // Загружаем комментарии заново
           const commentsList = document.querySelector(".comments");
           if (commentsList) {
             commentsList.innerHTML = "Пожалуйста подождите, загружаю комментарии...";
+            commentsList.style.display = 'block';
           }
           
           fetchComments()
@@ -367,6 +425,9 @@ function initAuthHandlers() {
               if (authorName && user) {
                 authorName.value = user.name;
               }
+              
+              // Скрываем предложение авторизации
+              showAuthSuggestion(false);
               
               alert("Регистрация успешна!");
             })
@@ -411,8 +472,15 @@ function initAuthHandlers() {
         authorName.value = '';
       }
       
-      // Показываем форму логина
-      showLoginForm();
+      // Очищаем контейнер авторизации
+      const authContainer = document.getElementById('authContainer');
+      if (authContainer) {
+        authContainer.innerHTML = '';
+        authContainer.style.display = 'none';
+      }
+      
+      // Показываем предложение авторизации
+      showAuthSuggestion(true);
       
       // Обновляем комментарии для отображения правильного состояния лайков
       fetchComments()
@@ -425,10 +493,12 @@ function initAuthHandlers() {
           console.error("Ошибка загрузки комментариев:", error);
         });
         
-    //   alert("Вы вышли из системы");
+      // alert("Вы вышли из системы");
+      
     });
   }
 }
+
 
 // Функция для инициализации обработчиков событий
 export function initEventHandlers() {
