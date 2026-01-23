@@ -55,32 +55,7 @@
 
       <!-- Форма добавления комментария -->
        
-      <div class="add-form" style="display: none; margin-top: 48px;">
-        <!-- Поле автора (только для чтения) -->
-        <input
-          type="text"
-          class="add-form-name"
-          id="authorName"
-          placeholder="Автор"
-          readonly
-          style="background-color: #333; color: white; border: 1px solid #555; cursor: not-allowed;"
-        />
-        <textarea
-          type="textarea"
-          class="add-form-text"
-          placeholder="Введите ваш комментарий"
-          rows="4"
-          id="textInput"
-        ></textarea>
-        <div class="add-form-row">
-          <button class="add-form-button" id="addButton">Написать</button>
-        </div>
-      </div>
-
-      <!-- Индикатор загрузки -->
-      <div class="form-loading" style="display: none; margin-top: 20px; color: white;">
-        Комментарий добавляется...
-      </div>
+      <div id="add-form"></div>
     </div>
 
     <script type="module" src="index.js"></script>

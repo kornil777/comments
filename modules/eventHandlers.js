@@ -196,8 +196,51 @@ function handleCommentClick(event) {
   }
 }
 
+function createAddForm() {
+  
+  const addForm = document.getElementById('add-form');
+  
+  if (!addForm) return;
+  
+  addForm.innerHTML = `
+    <div class="add-form" style="margin-top: 48px;">
+       
+        <input
+          type="text"
+          class="add-form-name"
+          id="authorName"
+          placeholder="Автор"
+          readonly
+          style="background-color: #333; color: white; border: 1px solid #555; cursor: not-allowed;"
+        />
+        <textarea
+          type="textarea"
+          class="add-form-text"
+          placeholder="Введите ваш комментарий"
+          rows="4"
+          id="textInput"
+        ></textarea>
+        <div class="add-form-row">
+          <button class="add-form-button" id="addButton">Написать</button>
+        </div>
+      </div>
+
+     
+      <div class="form-loading" style="display: none; margin-top: 20px; color: white;">
+        Комментарий добавляется...
+      </div>
+  `;
+  
+  // Показываем контейнер
+  addForm.style.display = 'block';
+}
+
+createAddForm();
+
+
 // Функция для добавления комментария
 export function addComment() {
+ 
   const textInput = document.getElementById("textInput");
   const text = textInput.value.trim();
 
