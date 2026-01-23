@@ -16,6 +16,10 @@ export function showAuthSuggestion(show) {
   if (commentsList) {
     commentsList.style.display = show ? 'none' : 'block';
   }
+  const titleHtml = document.getElementById('titleHead');
+  if (titleHtml) {
+    titleHtml.style.display = show ? 'block' : 'none';
+  }
 }
 
 // Функция для создания формы логина через JS
@@ -43,6 +47,7 @@ function createLoginForm() {
 
 // Функция для создания формы регистрации через JS
 function createRegisterForm() {
+  
   const authContainer = document.getElementById('authContainer');
   
   if (!authContainer) return;
@@ -78,16 +83,21 @@ export function showLoginForm() {
   createLoginForm();
   initAuthHandlers();
 }
-
+ 
 // Показать форму регистрации (скрывает комментарии и показывает форму)
 function showRegisterForm() {
   // Скрываем предложение авторизации
   showAuthSuggestion(false);
+  
   // Скрываем комментарии
+
   const commentsList = document.getElementById('commentsList');
   if (commentsList) {
     commentsList.style.display = 'none';
-  }
+  };
+
+ 
+
   // Создаем форму регистрации
   createRegisterForm();
   initAuthHandlers();
@@ -356,6 +366,7 @@ function initAuthHandlers() {
           }
         });
     });
+    
   }
   
   // Регистрация
@@ -492,6 +503,12 @@ function initAuthHandlers() {
         .catch((error) => {
           console.error("Ошибка загрузки комментариев:", error);
         });
+
+        const commentsList = document.getElementById('commentsList');
+  if (commentsList) {
+    commentsList.style.display = 'block';
+  }
+  
         
       // alert("Вы вышли из системы");
       
