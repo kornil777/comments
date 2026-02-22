@@ -1,71 +1,63 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>Проект "Комменты"</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="styles.css" />
+    <style>
+      .auth-suggestion {
+        display: none;
+        background: rgba(255,255,255,0.1);
+        border-radius: 20px;
+        padding: 30px;
+        margin: 30px 0;
+        text-align: center;
+        color: white;
+        font-size: 18px;
+      }
+      .auth-suggestion a {
+        color: #bcec30;
+        text-decoration: none;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .auth-suggestion a:hover {
+        text-decoration: underline;
+      }
+    </style>
   </head>
 
   <body>
     <div class="container">
-      <ul class="comments">
-        <li class="comment">
-          <div class="comment-header">
-            <div>Глеб Фокин</div>
-            <div>12.02.22 12:18</div>
-          </div>
-          <div class="comment-body">
-            <div class="comment-text">
-              Это будет первый комментарий на этой странице
-            </div>
-          </div>
-          <div class="comment-footer">
-            <div class="likes">
-              <span class="likes-counter">3</span>
-              <button class="like-button"></button>
-            </div>
-          </div>
-        </li>
-        <li class="comment">
-          <div class="comment-header">
-            <div>Варвара Н.</div>
-            <div>13.02.22 19:22</div>
-          </div>
-          <div class="comment-body">
-            <div class="comment-text">
-              Мне нравится как оформлена эта страница! ❤
-            </div>
-          </div>
-          <div class="comment-footer">
-            <div class="likes">
-              <span class="likes-counter">75</span>
-              <button class="like-button -active-like"></button>
-            </div>
-          </div>
-        </li>
-      </ul>
-      <div class="add-form">
-        <input
-          type="text"
-          class="add-form-name"
-          placeholder="Введите ваше имя"
-        />
-        <textarea
-          type="textarea"
-          class="add-form-text"
-          placeholder="Введите ваш коментарий"
-          rows="4"
-        ></textarea>
-        <div class="add-form-row">
-          <button class="add-form-button">Написать</button>
-        </div>
-      </div>
-    </div>
-  </body>
+      <h1 id="titleHead" style="color: white; margin-bottom: 40px;">Комментарии</h1>
 
-  <script>
-    "use strict";
-    // Код писать здесь
-    console.log("It works!");
-  </script>
+      <!-- Информация о пользователе -->
+      <div id="userInfo" style="display: none; margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 10px; color: white;">
+        <span style="margin-right: 15px;">Вы вошли как: <span id="userName"></span></span>
+        <button id="logoutButton" style="padding: 5px 15px; background: #ff4444; color: white; border: none; border-radius: 5px; cursor: pointer;">
+          Выйти
+        </button>
+      </div>
+
+      <!-- Контейнер для форм авторизации/регистрации -->
+      <div id="authContainer"></div>
+      
+      <!-- Предложение авторизации -->
+      <div class="auth-suggestion" id="authSuggestion">
+        <p style="margin: 0;">
+          Если хочешь оставить свой комментарий - 
+          <a id="authSuggestionLink">авторизуйся</a>
+        </p>
+      </div>
+
+      <!-- Комментарии -->
+      <ul class="comments" id="commentsList"></ul>
+
+      <!-- Форма добавления комментария -->
+       
+      <div id="add-form"></div>
+    </div>
+
+    <script type="module" src="index.js"></script>
+  </body>
 </html>
